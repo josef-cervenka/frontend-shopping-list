@@ -99,6 +99,17 @@ export function createShoppingList(name) {
   })
 }
 
+export function renameShoppingList(currentName, nextName) {
+  const trimmed = (nextName || '').trim()
+  if (!trimmed) {
+    return Promise.reject(new Error('List name is required'))
+  }
+  return request(`/shoppingList/${encodeSegment(currentName)}`, {
+    method: 'PUT',
+    body: { name: trimmed },
+  })
+}
+
 export function getShoppingList(shoppingListId) {
   return request(`/shoppingList/${encodeSegment(shoppingListId)}`)
 }

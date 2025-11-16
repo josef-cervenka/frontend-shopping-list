@@ -1,15 +1,29 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import * as api from '../api.js'
+import { useAuth } from '../contexts/useAuth.js'
 
 export default function ShoppingListPage() {
   const { shoppingListId } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const encodedListId = encodeURIComponent(shoppingListId)
   const [items, setItems] = useState([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [listName, setListName] = useState(shoppingListId)
+  const [owner, setOwner] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState(shoppingListId)
+  const [renameLoading, setRenameLoading] = useState(false)
+  const canRename = Boolean(owner && user?.username === owner)
+
+  useEffect(() => {
+    setListName(shoppingListId)
+    setRenameValue(shoppingListId)
+  }, [shoppingListId])
 
   useEffect(() => {
     let mounted = true
@@ -18,10 +32,13 @@ export default function ShoppingListPage() {
       setError(null)
     })
     api
-      .getItems(shoppingListId)
-      .then((data) => {
+      .getShoppingList(shoppingListId)
+      .then((list) => {
         if (mounted) {
-          setItems(Array.isArray(data) ? data : [])
+          setItems(Array.isArray(list?.items) ? list.items : [])
+          setListName(list?.name || shoppingListId)
+          setRenameValue(list?.name || shoppingListId)
+          setOwner(list?.owner || '')
         }
       })
       .catch((err) => {
@@ -83,12 +100,87 @@ export default function ShoppingListPage() {
 
   const filterOptions = ['all', 'active', 'done']
 
+  function startRename() {
+    if (!canRename) return
+    setRenameValue(listName)
+    setIsRenaming(true)
+  }
+
+  function cancelRename() {
+    setRenameValue(listName)
+    setIsRenaming(false)
+  }
+
+  async function submitRename(e) {
+    e.preventDefault()
+    if (!canRename || renameLoading) return
+    const next = renameValue.trim()
+    if (!next || next === listName) {
+      setIsRenaming(false)
+      setRenameValue(listName)
+      return
+    }
+    setRenameLoading(true)
+    try {
+      const updated = await api.renameShoppingList(shoppingListId, next)
+      const resolvedName = updated?.name || next
+      if (Array.isArray(updated?.items)) {
+        setItems(updated.items)
+      }
+      setListName(resolvedName)
+      setOwner(updated?.owner || owner)
+      setIsRenaming(false)
+      setError(null)
+      if (shoppingListId !== resolvedName) {
+        navigate(`/shoppingList/${encodeURIComponent(resolvedName)}`)
+      }
+    } catch (err) {
+      setError(err.message || 'Unable to rename list')
+    } finally {
+      setRenameLoading(false)
+    }
+  }
+
   return (
     <div className="page-card">
       <div className="page-header">
         <div>
           <p className="eyebrow">Shopping list</p>
-          <h2 className="page-heading">{shoppingListId}</h2>
+          {canRename && isRenaming ? (
+            <form
+              className="form-inline"
+              onSubmit={submitRename}
+              style={{ gap: '0.5rem', flexWrap: 'wrap', paddingTop: '0.25rem' }}
+            >
+              <input
+                className="text-input"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="List name"
+                disabled={renameLoading}
+                autoFocus
+              />
+              <button
+                className="btn-primary"
+                type="submit"
+                disabled={renameLoading || !renameValue.trim()}
+              >
+                {renameLoading ? 'Saving...' : 'Save'}
+              </button>
+              <button className="btn-text" type="button" onClick={cancelRename} disabled={renameLoading}>
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <h2 className="page-heading">{listName}</h2>
+              {canRename && (
+                <button className="btn-text chip-link" type="button" onClick={startRename}>
+                  Rename
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="page-actions chip-links">
           <Link className="chip-link" to="/shoppingLists">

@@ -80,13 +80,6 @@ export default function MembersPage() {
 
       </div>
 
-      {owner && (
-        <div className="card-inline" style={{ marginBottom: '1rem' }}>
-          <span>Owner</span>
-          <strong>{owner}</strong>
-        </div>
-      )}
-
       {error && <div className="alert alert-error">{error}</div>}
 
       {loading ? (
