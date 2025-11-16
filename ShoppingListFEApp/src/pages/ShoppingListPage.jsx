@@ -9,6 +9,7 @@ export default function ShoppingListPage() {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     let mounted = true
@@ -68,6 +69,20 @@ export default function ShoppingListPage() {
     }
   }
 
+  const filteredItems = items.filter((it) => {
+    if (filter === 'active') return !it.checked
+    if (filter === 'done') return it.checked
+    return true
+  })
+
+  const filterLabelMap = {
+    all: 'All items',
+    active: 'Pending only',
+    done: 'Completed only',
+  }
+
+  const filterOptions = ['all', 'active', 'done']
+
   return (
     <div className="page-card">
       <div className="page-header">
@@ -76,13 +91,13 @@ export default function ShoppingListPage() {
           <h2 className="page-heading">{shoppingListId}</h2>
         </div>
         <div className="page-actions chip-links">
-        <Link className="chip-link" to="/shoppingLists">
-          ← All lists
-        </Link>
-        <Link className="chip-link" to={`/shoppingList/${encodedListId}/members`}>
-          Manage members
-        </Link>
-      </div>
+          <Link className="chip-link" to="/shoppingLists">
+            All lists
+          </Link>
+          <Link className="chip-link" to={`/shoppingList/${encodedListId}/members`}>
+            Manage members
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -103,11 +118,29 @@ export default function ShoppingListPage() {
             </button>
           </form>
 
+          <div className="chip-links" style={{ marginBottom: '1rem', flexWrap: 'wrap' }}>
+            {filterOptions.map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={`chip-link ${filter === key ? 'chip-link-active' : ''}`}
+                onClick={() => setFilter(key)}
+                aria-pressed={filter === key}
+              >
+                {filterLabelMap[key]}
+              </button>
+            ))}
+          </div>
+
           {items.length === 0 ? (
             <p className="muted">No items yet. Start by adding your first product.</p>
+          ) : filteredItems.length === 0 ? (
+            <p className="muted">
+              No items match the current filter ({filterLabelMap[filter].toLowerCase()}).
+            </p>
           ) : (
             <ul className="items-list">
-              {items.map((it) => (
+              {filteredItems.map((it) => (
                 <li key={it.name}>
                   <label className="checkbox-row">
                     <input type="checkbox" checked={it.checked} onChange={() => toggle(it.name)} />
