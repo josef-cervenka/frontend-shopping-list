@@ -425,16 +425,21 @@ app.delete('/shoppingList/:shoppingListName/remove', (req, res) => {
   const username = requireAuthenticated(req, res)
   if (!username) return
 
-  if (list.owner !== username) {
-    return res.status(403).json({ message: 'Only the owner can manage members' })
-  }
-
   const memberUsername = (name || '').trim()
   if (!memberUsername) {
     return res.status(400).json({ message: 'Member username is required' })
   }
 
+  const isOwner = list.owner === username
+  const isSelf = memberUsername === username
+  if (!isOwner && !isSelf) {
+    return res.status(403).json({ message: 'Only the owner can remove other members' })
+  }
+
   list.members = list.members.filter((member) => member !== memberUsername)
+  if (memberUsername === list.owner) {
+    list.owner = list.members[0] || null
+  }
   res.json({ members: list.members })
 })
 

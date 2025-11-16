@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import './App.css'
+import { AuthProvider } from './contexts/AuthContext.jsx'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import ShoppingListPage from './pages/ShoppingListPage'
+import SignPage from './pages/SignPage'
+import MembersPage from './pages/MembersPage'
+import ShoppingListsPage from './pages/ShoppingListsPage'
+import { NavBar } from './components/NavBar.jsx'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <AuthProvider>
+      <div className="app-shell">
+        <NavBar />
+        <main className="app-main">
+          <Routes>
+            <Route path="/sign" element={<SignPage />} />
+            <Route
+              path="/shoppingLists"
+              element={
+                <ProtectedRoute>
+                  <ShoppingListsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/shoppingList/:shoppingListId"
+              element={
+                <ProtectedRoute>
+                  <ShoppingListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/shoppingList/:shoppingListId/members"
+              element={
+                <ProtectedRoute>
+                  <MembersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/shoppingLists" />} />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </AuthProvider>
   )
 }
-
-export default App
