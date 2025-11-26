@@ -20,9 +20,11 @@ export default function ShoppingListPage() {
   const [renameValue, setRenameValue] = useState(shoppingListId)
   const [renameLoading, setRenameLoading] = useState(false)
   const [archiveLoading, setArchiveLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const isOwner = user?.username === owner
   const canRename = Boolean(owner && isOwner)
   const canArchive = Boolean(owner && isOwner)
+  const canDelete = Boolean(owner && isOwner)
 
   useEffect(() => {
     setListName(shoppingListId)
@@ -181,6 +183,21 @@ export default function ShoppingListPage() {
     }
   }
 
+  async function deleteList() {
+    if (!canDelete || deleteLoading) return
+    const confirmed = window.confirm('Delete this shopping list? This cannot be undone.')
+    if (!confirmed) return
+    setDeleteLoading(true)
+    try {
+      await api.deleteShoppingList(shoppingListId)
+      navigate('/shoppingLists')
+    } catch (err) {
+      setError(err.message || 'Unable to delete list')
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
   return (
     <div className="page-card">
       <div className="page-header">
@@ -242,6 +259,17 @@ export default function ShoppingListPage() {
               disabled={archiveLoading}
             >
               {archiveLoading ? 'Saving...' : archived ? 'Unarchive list' : 'Archive list'}
+            </button>
+          )}
+          {canDelete && (
+            <button
+              className="chip-link"
+              type="button"
+              onClick={deleteList}
+              disabled={deleteLoading}
+              style={{ color: '#b91c1c' }}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete list'}
             </button>
           )}
         </div>

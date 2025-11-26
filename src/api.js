@@ -191,3 +191,9 @@ export async function removeMember(shoppingListId, name) {
   }
   return Array.isArray(response) ? response : []
 }
+
+export function deleteShoppingList(shoppingListId) {
+  return request(`/shoppingList/${encodeSegment(shoppingListId)}`, {
+    method: 'DELETE',
+  })
+}
