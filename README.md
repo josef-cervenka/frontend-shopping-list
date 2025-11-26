@@ -68,3 +68,16 @@ Use the steps below to get the frontend and its local mock backend running.
  - you can leave the shopping list in manage members
   
   ![alt text](./assets/image-4.png)
+
+### 6. Archive and filter by archive
+ - you can filter shopping lists by archive
+
+  ![alt text](./assets/image-7.png)
+
+  ![alt text](./assets/image-8.png)
+
+
+### 7. Deleting shopping list
+ - you can delete shopping lists you own
+  
+  ![alt text](./assets/image-9.png)
