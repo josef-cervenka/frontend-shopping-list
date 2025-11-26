@@ -15,14 +15,19 @@ export default function ShoppingListPage() {
   const [filter, setFilter] = useState('all')
   const [listName, setListName] = useState(shoppingListId)
   const [owner, setOwner] = useState('')
+  const [archived, setArchived] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState(shoppingListId)
   const [renameLoading, setRenameLoading] = useState(false)
-  const canRename = Boolean(owner && user?.username === owner)
+  const [archiveLoading, setArchiveLoading] = useState(false)
+  const isOwner = user?.username === owner
+  const canRename = Boolean(owner && isOwner)
+  const canArchive = Boolean(owner && isOwner)
 
   useEffect(() => {
     setListName(shoppingListId)
     setRenameValue(shoppingListId)
+    setArchived(false)
   }, [shoppingListId])
 
   useEffect(() => {
@@ -39,6 +44,7 @@ export default function ShoppingListPage() {
           setListName(list?.name || shoppingListId)
           setRenameValue(list?.name || shoppingListId)
           setOwner(list?.owner || '')
+          setArchived(Boolean(list?.archived))
         }
       })
       .catch((err) => {
@@ -54,6 +60,10 @@ export default function ShoppingListPage() {
 
   async function addItem(e) {
     e.preventDefault()
+    if (archived) {
+      setError('This shopping list is archived. Items cannot be changed.')
+      return
+    }
     if (!text.trim()) return
     try {
       const added = await api.addItem(shoppingListId, text.trim())
@@ -66,6 +76,10 @@ export default function ShoppingListPage() {
   }
 
   async function toggle(itemName) {
+    if (archived) {
+      setError('This shopping list is archived. Items cannot be changed.')
+      return
+    }
     try {
       const updated = await api.toggleItem(shoppingListId, itemName)
       if (!updated) return
@@ -77,6 +91,10 @@ export default function ShoppingListPage() {
   }
 
   async function removeItem(itemName) {
+    if (archived) {
+      setError('This shopping list is archived. Items cannot be changed.')
+      return
+    }
     try {
       await api.deleteItem(shoppingListId, itemName)
       setItems((s) => s.filter((it) => it.name !== itemName))
@@ -129,6 +147,9 @@ export default function ShoppingListPage() {
       }
       setListName(resolvedName)
       setOwner(updated?.owner || owner)
+      if (typeof updated?.archived === 'boolean') {
+        setArchived(updated.archived)
+      }
       setIsRenaming(false)
       setError(null)
       if (shoppingListId !== resolvedName) {
@@ -138,6 +159,25 @@ export default function ShoppingListPage() {
       setError(err.message || 'Unable to rename list')
     } finally {
       setRenameLoading(false)
+    }
+  }
+
+  async function toggleArchivedState() {
+    if (!canArchive || archiveLoading) return
+    setArchiveLoading(true)
+    try {
+      const updated = await api.setShoppingListArchived(shoppingListId, !archived)
+      setArchived(Boolean(updated?.archived))
+      if (Array.isArray(updated?.items)) {
+        setItems(updated.items)
+      }
+      setListName(updated?.name || listName)
+      setOwner(updated?.owner || owner)
+      setError(null)
+    } catch (err) {
+      setError(err.message || 'Unable to update archive status')
+    } finally {
+      setArchiveLoading(false)
     }
   }
 
@@ -179,6 +219,11 @@ export default function ShoppingListPage() {
                   Rename
                 </button>
               )}
+              {archived && (
+                <span className="chip-link chip-link-active" aria-label="Archived list">
+                  Archived
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -189,8 +234,24 @@ export default function ShoppingListPage() {
           <Link className="chip-link" to={`/shoppingList/${encodedListId}/members`}>
             Manage members
           </Link>
+          {canArchive && (
+            <button
+              className={`chip-link ${archived ? 'chip-link-active' : ''}`}
+              type="button"
+              onClick={toggleArchivedState}
+              disabled={archiveLoading}
+            >
+              {archiveLoading ? 'Saving...' : archived ? 'Unarchive list' : 'Archive list'}
+            </button>
+          )}
         </div>
       </div>
+
+      {archived && (
+        <div className="alert" style={{ marginBottom: '1rem' }}>
+          This list is archived. Items are read-only until you unarchive it.
+        </div>
+      )}
 
       {error && <div className="alert alert-error">{error}</div>}
 
@@ -204,9 +265,10 @@ export default function ShoppingListPage() {
               placeholder="Add item"
               value={text}
               onChange={(e) => setText(e.target.value)}
+              disabled={archived}
             />
-            <button className="btn-primary" type="submit">
-              Add
+            <button className="btn-primary" type="submit" disabled={archived}>
+              {archived ? 'Archived' : 'Add'}
             </button>
           </form>
 
@@ -235,7 +297,12 @@ export default function ShoppingListPage() {
               {filteredItems.map((it) => (
                 <li key={it.name}>
                   <label className="checkbox-row">
-                    <input type="checkbox" checked={it.checked} onChange={() => toggle(it.name)} />
+                    <input
+                      type="checkbox"
+                      checked={it.checked}
+                      onChange={() => toggle(it.name)}
+                      disabled={archived}
+                    />
                     <span
                       className="item-name"
                       style={{
@@ -246,7 +313,12 @@ export default function ShoppingListPage() {
                       {it.name}
                     </span>
                   </label>
-                  <button className="btn-text" type="button" onClick={() => removeItem(it.name)}>
+                  <button
+                    className="btn-text"
+                    type="button"
+                    onClick={() => removeItem(it.name)}
+                    disabled={archived}
+                  >
                     Remove
                   </button>
                 </li>

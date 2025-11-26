@@ -27,6 +27,7 @@ const db = {
       name: 'demo-list',
       owner: 'admin',
       members: ['admin', 'franta'],
+      archived: false,
       items: [
         { name: 'Bread', checked: false },
         { name: 'Milk', checked: true },
@@ -36,6 +37,7 @@ const db = {
       name: 'pantry-topup',
       owner: 'demo',
       members: ['demo', 'admin'],
+      archived: false,
       items: [
         { name: 'Pasta', checked: false },
         { name: 'Coffee', checked: true },
@@ -86,6 +88,14 @@ function ensureListAccess(list, username, res) {
 
 function getItemByName(list, itemName) {
   return list.items.find((item) => item.name === itemName)
+}
+
+function ensureListEditable(list, res) {
+  if (list.archived) {
+    res.status(400).json({ message: 'Shopping list is archived and cannot be modified' })
+    return false
+  }
+  return true
 }
 
 // --- BASIC ENDPOINTS -----------------------------------------------------
@@ -145,6 +155,7 @@ app.post('/shoppingList/:shoppingListName', (req, res) => {
     name: shoppingListName,
     owner: username,
     members: [username],
+    archived: false,
     items: [],
   }
 
@@ -173,15 +184,25 @@ app.get('/shoppingList', (req, res) => {
   const username = requireAuthenticated(req, res)
   if (!username) return
 
-  const lists = Object.values(db.shoppingLists).filter(
-    (list) => list.owner === username || list.members.includes(username),
-  )
+  const { archived } = req.query || {}
+  let archivedFilter = null
+  if (typeof archived === 'string') {
+    const lowered = archived.toLowerCase()
+    if (lowered === 'true') archivedFilter = true
+    if (lowered === 'false') archivedFilter = false
+  }
+
+  const lists = Object.values(db.shoppingLists).filter((list) => {
+    const hasAccess = list.owner === username || list.members.includes(username)
+    const matchesArchived = archivedFilter === null ? true : list.archived === archivedFilter
+    return hasAccess && matchesArchived
+  })
   res.json(lists)
 })
 
 app.put('/shoppingList/:shoppingListName', (req, res) => {
   const { shoppingListName } = req.params
-  const { name: nextName } = req.body || {}
+  const { name: nextName, archived } = req.body || {}
   const list = db.shoppingLists[shoppingListName]
   if (!list) {
     return res.status(404).json({ message: 'Shopping list not found' })
@@ -192,6 +213,10 @@ app.put('/shoppingList/:shoppingListName', (req, res) => {
 
   if (!ensureListAccess(list, username, res)) {
     return
+  }
+
+  if (typeof archived === 'boolean') {
+    list.archived = archived
   }
 
   if (nextName && nextName !== list.name) {
@@ -238,6 +263,10 @@ app.post('/shoppingList/:shoppingListName/item', (req, res) => {
   if (!username) return
 
   if (!ensureListAccess(list, username, res)) {
+    return
+  }
+
+  if (!ensureListEditable(list, res)) {
     return
   }
 
@@ -302,6 +331,10 @@ app.put('/shoppingList/:shoppingListName/item/:itemName', (req, res) => {
     return
   }
 
+  if (!ensureListEditable(list, res)) {
+    return
+  }
+
   const item = getItemByName(list, itemName)
   if (!item) {
     return res.status(404).json({ message: 'Item not found' })
@@ -335,6 +368,10 @@ app.put('/shoppingList/:shoppingListName/item/:itemName/mark', (req, res) => {
     return
   }
 
+  if (!ensureListEditable(list, res)) {
+    return
+  }
+
   const item = getItemByName(list, itemName)
   if (!item) {
     return res.status(404).json({ message: 'Item not found' })
@@ -360,6 +397,10 @@ app.delete('/shoppingList/:shoppingListName/item/:itemName', (req, res) => {
   if (!username) return
 
   if (!ensureListAccess(list, username, res)) {
+    return
+  }
+
+  if (!ensureListEditable(list, res)) {
     return
   }
 

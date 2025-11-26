@@ -84,8 +84,15 @@ export function logout() {
   return request('/logout', { method: 'POST' })
 }
 
-export function getShoppingLists() {
-  return request('/shoppingList')
+export function getShoppingLists(options = {}) {
+  const { archived } = options
+  const params = new URLSearchParams()
+  if (typeof archived === 'boolean') {
+    params.set('archived', archived ? 'true' : 'false')
+  }
+  const query = params.toString()
+  const path = query ? `/shoppingList?${query}` : '/shoppingList'
+  return request(path)
 }
 
 export function createShoppingList(name) {
@@ -99,15 +106,23 @@ export function createShoppingList(name) {
   })
 }
 
+export function updateShoppingList(shoppingListId, payload = {}) {
+  return request(`/shoppingList/${encodeSegment(shoppingListId)}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
 export function renameShoppingList(currentName, nextName) {
   const trimmed = (nextName || '').trim()
   if (!trimmed) {
     return Promise.reject(new Error('List name is required'))
   }
-  return request(`/shoppingList/${encodeSegment(currentName)}`, {
-    method: 'PUT',
-    body: { name: trimmed },
-  })
+  return updateShoppingList(currentName, { name: trimmed })
+}
+
+export function setShoppingListArchived(shoppingListId, archived) {
+  return updateShoppingList(shoppingListId, { archived })
 }
 
 export function getShoppingList(shoppingListId) {

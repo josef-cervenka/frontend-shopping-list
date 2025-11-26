@@ -8,12 +8,15 @@ export default function ShoppingListsPage() {
   const [error, setError] = useState(null)
   const [creating, setCreating] = useState(false)
   const [newListName, setNewListName] = useState('')
+  const [filter, setFilter] = useState('all')
 
-  async function fetchLists() {
+  async function fetchLists(selectedFilter = filter) {
     try {
       setLoading(true)
       setError(null)
-      const data = await api.getShoppingLists()
+      const data = await api.getShoppingLists({
+        archived: selectedFilter === 'archived' ? true : selectedFilter === 'active' ? false : undefined,
+      })
       setLists(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.message || 'Unable to load shopping lists')
@@ -23,8 +26,8 @@ export default function ShoppingListsPage() {
   }
 
   useEffect(() => {
-    fetchLists()
-  }, [])
+    fetchLists(filter)
+  }, [filter])
 
   async function submit(e) {
     e.preventDefault()
@@ -53,6 +56,20 @@ export default function ShoppingListsPage() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      <div className="chip-links" style={{ marginBottom: '1rem' }}>
+        {['all', 'active', 'archived'].map((key) => (
+          <button
+            key={key}
+            type="button"
+            className={`chip-link ${filter === key ? 'chip-link-active' : ''}`}
+            onClick={() => setFilter(key)}
+            aria-pressed={filter === key}
+          >
+            {key === 'all' ? 'All' : key === 'active' ? 'Active (not archived)' : 'Archived'}
+          </button>
+        ))}
+      </div>
+
       <form className="form-inline" onSubmit={submit} style={{ marginBottom: '1.5rem' }}>
         <input
           className="text-input"
@@ -79,16 +96,26 @@ export default function ShoppingListsPage() {
                 <div className="page-header" style={{ marginBottom: 0 }}>
                   <div>
                     <strong>{list.name}</strong>
-                    <div className="muted" style={{ fontSize: '0.9rem' }}>Owner: {list.owner}</div>
+                    <div className="muted" style={{ fontSize: '0.9rem' }}>
+                      Owner: {list.owner}
+                    </div>
+                    {list.archived && (
+                      <span
+                        className="chip-link chip-link-active"
+                        style={{ marginTop: '0.35rem', display: 'inline-flex' }}
+                      >
+                        Archived
+                      </span>
+                    )}
                   </div>
                   <div className="chip-links">
-                  <Link className="chip-link" to={`/shoppingList/${encodedName}`}>
-                    View list
-                  </Link>
-                  <Link className="chip-link" to={`/shoppingList/${encodedName}/members`}>
-                    Manage members
-                  </Link>
-                </div>
+                    <Link className="chip-link" to={`/shoppingList/${encodedName}`}>
+                      View list
+                    </Link>
+                    <Link className="chip-link" to={`/shoppingList/${encodedName}/members`}>
+                      Manage members
+                    </Link>
+                  </div>
                 </div>
                 <div className="list-tile__meta">
                   Members: {Array.isArray(list.members) ? list.members.length : 0}
