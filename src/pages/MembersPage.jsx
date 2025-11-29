@@ -114,9 +114,9 @@ export default function MembersPage() {
                     <span>{m}</span>
                     {m === owner && <span className="tag-owner">Owner</span>}
                   </div>
-                  {((canManageMembers && m !== owner) || user?.username === m) && (
+                  {(canManageMembers && m !== owner) && (
                     <button className="btn-text" type="button" onClick={() => removeMember(m)}>
-                      {user?.username === m ? 'Leave' : 'Remove'}
+                      Remove
                     </button>
                   )}
                 </li>
