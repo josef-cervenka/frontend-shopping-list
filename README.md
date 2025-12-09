@@ -8,7 +8,7 @@ Use the steps below to get the frontend and its MongoDB-backed API running.
    - prerequsites - docker 
    - go to the root folder and tun command `docker compose up -d`
 
-2. Open the URL printed in the terminal (defaults to http://localhost:8080) to start testing.
+2. Open the URL http://localhost:8080 to start testing
 
 3. Remove app containers and volumes from docker
    - go to the root folder and run command `docker compose down -v`
