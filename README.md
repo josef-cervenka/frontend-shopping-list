@@ -2,62 +2,17 @@
 
 Use the steps below to get the frontend and its MongoDB-backed API running.
 
-## Start the backend
+## Run the app
 
-1. Switch to the backend folder:
+1. Run docker compose
+   - prerequsites - docker 
+   - go to the root folder and tun command `docker compose up -d`
 
-   ```bash
-   cd backendMock
-   ```
+2. Open the URL printed in the terminal (defaults to http://localhost:8080) to start testing.
 
-2. Start MongoDB via Docker (runs mongo:8.2.2 locally):
-
-   ```bash
-   docker compose up -d
-   ```
-
-3. Copy the sample environment and adjust if needed:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   `MONGODB_URI` defaults to `mongodb://localhost:27017/shopping-list`.
-
-4. Install dependencies (first run only):
-
-   ```bash
-   npm install
-   ```
-
-5. Start the API server (defaults to http://localhost:8081):
-
-   ```bash
-   npm start &
-   ```
-
-6. Back to root folder
-   ```bash
-   cd ..
-   ```
-
-Backend layout follows a simple Express best-practice split: `src/app.js` wires middleware and routes, `src/routes` + `src/controllers` hold endpoints, `src/models` contains Mongoose schemas, and `src/config/db.js` manages the MongoDB connection.
-
-## Start the FE dev server
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Launch Vite in development mode (in the project root):
-
-   ```bash
-   npm run dev
-   ```
-
-3. Open the URL printed in the terminal (defaults to http://localhost:8080) to start testing.
+3. Remove app containers and volumes from docker
+   - go to the root folder and run command `docker compose down -v`
+   
 
 ## Testing the app
 

@@ -1,0 +1,44 @@
+services:
+  shopping-list-mongo:
+    image: mongo:8.2.2
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./backendMock/mongo-init:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_DATABASE: shopping-list
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+  shopping-list-backend-mock:
+    build:
+      context: ./backendMock
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      MONGODB_URI: mongodb://admin:password@shopping-list-mongo:27017/shopping-list?authSource=admin
+      CLIENT_ORIGIN: http://localhost:8080
+    depends_on:
+      - shopping-list-mongo
+
+  shopping-list-frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: http://localhost:8081
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+    depends_on:
+      - shopping-list-backend-mock
+
+volumes:
+  mongo-data:
+
+
