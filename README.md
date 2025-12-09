@@ -1,31 +1,47 @@
 # Shopping List Frontend
 
-Use the steps below to get the frontend and its local mock backend running.
+Use the steps below to get the frontend and its MongoDB-backed API running.
 
-## Start the backend mock
+## Start the backend
 
-1. Switch to the backend mock folder:
+1. Switch to the backend folder:
 
    ```bash
    cd backendMock
    ```
 
-2. Install dependencies (first run only):
+2. Start MongoDB via Docker (runs mongo:8.2.2 locally):
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. Copy the sample environment and adjust if needed:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   `MONGODB_URI` defaults to `mongodb://localhost:27017/shopping-list`.
+
+4. Install dependencies (first run only):
 
    ```bash
    npm install
    ```
 
-3. Start the mock server (defaults to http://localhost:8081):
+5. Start the API server (defaults to http://localhost:8081):
 
    ```bash
-   node server.js &
+   npm start &
    ```
 
-4. Back to root folder
+6. Back to root folder
    ```bash
    cd ..
    ```
+
+Backend layout follows a simple Express best-practice split: `src/app.js` wires middleware and routes, `src/routes` + `src/controllers` hold endpoints, `src/models` contains Mongoose schemas, and `src/config/db.js` manages the MongoDB connection.
 
 ## Start the FE dev server
 

@@ -1,0 +1,485 @@
+{
+  "info": {
+    "_postman_id": "6306fe4d-6424-4ea8-8508-74abd137bed4",
+    "name": "Shopping List API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37062690"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"admin\", \"password\": \"admin\"}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/login",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/logout",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shopping List",
+      "item": [
+        {
+          "name": "Get Lists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList?archived=false",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList"
+              ],
+              "query": [
+                {
+                  "key": "archived",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create List",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"shoppingListName\": \"My List\"}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update List",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"New List Name\", \"archived\": true}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete List",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "Get Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/items",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Milk\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/item",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "item"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"checked\": true}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/item/{{itemName}}/mark",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "item",
+                "{{itemName}}",
+                "mark"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rename Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Almond Milk\"}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/item/{{itemName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "item",
+                "{{itemName}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Item Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/item/{{itemName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "item",
+                "{{itemName}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/item/{{itemName}}",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "item",
+                "{{itemName}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Members",
+      "item": [
+        {
+          "name": "Invite Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"jane\"}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/invite",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "invite"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/members",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "members"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"jane\"}"
+            },
+            "url": {
+              "raw": "{{API_ORIGIN}}/shoppingList/{{listName}}/remove",
+              "host": [
+                "{{API_ORIGIN}}"
+              ],
+              "path": [
+                "shoppingList",
+                "{{listName}}",
+                "remove"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "mock-token-franta",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "listName",
+      "value": "demo-list"
+    },
+    {
+      "key": "itemName",
+      "value": "Milk"
+    },
+    {
+      "key": "API_ORIGIN",
+      "value": "http://localhost:8081"
+    }
+  ]
+}
