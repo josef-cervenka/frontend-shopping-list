@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import * as api from '../api.js'
 import { useAuth } from '../contexts/useAuth.js'
+import { useI18n } from '../contexts/useI18n'
+import { getItemStats } from '../utils/stats'
+import { StatsPie } from '../components/StatsPie'
 
 export default function ShoppingListPage() {
   const { shoppingListId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useI18n()
   const encodedListId = encodeURIComponent(shoppingListId)
   const [items, setItems] = useState([])
   const [text, setText] = useState('')
@@ -51,7 +55,7 @@ export default function ShoppingListPage() {
       })
       .catch((err) => {
         if (mounted) {
-          setError(err.message || 'Unable to load items')
+          setError(err.message || t('list.loadError'))
         }
       })
       .finally(() => mounted && setLoading(false))
@@ -63,7 +67,7 @@ export default function ShoppingListPage() {
   async function addItem(e) {
     e.preventDefault()
     if (archived) {
-      setError('This shopping list is archived. Items cannot be changed.')
+      setError(t('list.archivedError'))
       return
     }
     if (!text.trim()) return
@@ -73,13 +77,13 @@ export default function ShoppingListPage() {
       setText('')
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to add item')
+      setError(err.message || t('list.addError'))
     }
   }
 
   async function toggle(itemName) {
     if (archived) {
-      setError('This shopping list is archived. Items cannot be changed.')
+      setError(t('list.archivedError'))
       return
     }
     try {
@@ -88,13 +92,13 @@ export default function ShoppingListPage() {
       setItems((s) => s.map((it) => (it.name === itemName ? updated : it)))
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to update item')
+      setError(err.message || t('list.updateError'))
     }
   }
 
   async function removeItem(itemName) {
     if (archived) {
-      setError('This shopping list is archived. Items cannot be changed.')
+      setError(t('list.archivedError'))
       return
     }
     try {
@@ -102,7 +106,7 @@ export default function ShoppingListPage() {
       setItems((s) => s.filter((it) => it.name !== itemName))
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to remove item')
+      setError(err.message || t('list.removeError'))
     }
   }
 
@@ -112,11 +116,16 @@ export default function ShoppingListPage() {
     return true
   })
 
-  const filterLabelMap = {
-    all: 'All items',
-    active: 'Pending only',
-    done: 'Completed only',
-  }
+  const stats = useMemo(() => getItemStats(items), [items])
+
+  const filterLabelMap = useMemo(
+    () => ({
+      all: t('list.filterAll'),
+      active: t('list.filterActive'),
+      done: t('list.filterDone'),
+    }),
+    [t],
+  )
 
   const filterOptions = ['all', 'active', 'done']
 
@@ -158,7 +167,7 @@ export default function ShoppingListPage() {
         navigate(`/shoppingList/${encodeURIComponent(resolvedName)}`)
       }
     } catch (err) {
-      setError(err.message || 'Unable to rename list')
+      setError(err.message || t('list.renameError'))
     } finally {
       setRenameLoading(false)
     }
@@ -177,7 +186,7 @@ export default function ShoppingListPage() {
       setOwner(updated?.owner || owner)
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to update archive status')
+      setError(err.message || t('list.archiveError'))
     } finally {
       setArchiveLoading(false)
     }
@@ -185,14 +194,14 @@ export default function ShoppingListPage() {
 
   async function deleteList() {
     if (!canDelete || deleteLoading) return
-    const confirmed = window.confirm('Delete this shopping list? This cannot be undone.')
+    const confirmed = window.confirm(t('list.deleteConfirm'))
     if (!confirmed) return
     setDeleteLoading(true)
     try {
       await api.deleteShoppingList(shoppingListId)
       navigate('/shoppingLists')
     } catch (err) {
-      setError(err.message || 'Unable to delete list')
+      setError(err.message || t('list.deleteError'))
     } finally {
       setDeleteLoading(false)
     }
@@ -202,7 +211,7 @@ export default function ShoppingListPage() {
     <div className="page-card">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Shopping list</p>
+          <p className="eyebrow">{t('list.eyebrow')}</p>
           {canRename && isRenaming ? (
             <form
               className="form-inline"
@@ -213,7 +222,7 @@ export default function ShoppingListPage() {
                 className="text-input"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
-                placeholder="List name"
+                placeholder={t('lists.createPlaceholder')}
                 disabled={renameLoading}
                 autoFocus
               />
@@ -222,10 +231,10 @@ export default function ShoppingListPage() {
                 type="submit"
                 disabled={renameLoading || !renameValue.trim()}
               >
-                {renameLoading ? 'Saving...' : 'Save'}
+                {renameLoading ? t('list.saving') : t('list.save')}
               </button>
               <button className="btn-text" type="button" onClick={cancelRename} disabled={renameLoading}>
-                Cancel
+                {t('list.cancel')}
               </button>
             </form>
           ) : (
@@ -233,12 +242,12 @@ export default function ShoppingListPage() {
               <h2 className="page-heading">{listName}</h2>
               {canRename && (
                 <button className="btn-text chip-link" type="button" onClick={startRename}>
-                  Rename
+                  {t('list.rename')}
                 </button>
               )}
               {archived && (
-                <span className="chip-link chip-link-active" aria-label="Archived list">
-                  Archived
+                <span className="chip-link chip-link-active" aria-label={t('list.archivedTag')}>
+                  {t('list.archivedTag')}
                 </span>
               )}
             </div>
@@ -246,10 +255,10 @@ export default function ShoppingListPage() {
         </div>
         <div className="page-actions chip-links">
           <Link className="chip-link" to="/shoppingLists">
-            All lists
+            {t('list.allLists')}
           </Link>
           <Link className="chip-link" to={`/shoppingList/${encodedListId}/members`}>
-            Manage members
+            {t('list.manageMembers')}
           </Link>
           {canArchive && (
             <button
@@ -258,7 +267,7 @@ export default function ShoppingListPage() {
               onClick={toggleArchivedState}
               disabled={archiveLoading}
             >
-              {archiveLoading ? 'Saving...' : archived ? 'Unarchive list' : 'Archive list'}
+              {archiveLoading ? t('list.saving') : archived ? t('list.unarchive') : t('list.archive')}
             </button>
           )}
           {canDelete && (
@@ -267,9 +276,9 @@ export default function ShoppingListPage() {
               type="button"
               onClick={deleteList}
               disabled={deleteLoading}
-              style={{ color: '#b91c1c' }}
+              style={{ color: 'var(--color-danger)' }}
             >
-              {deleteLoading ? 'Deleting...' : 'Delete list'}
+              {deleteLoading ? t('list.deleting') : t('list.delete')}
             </button>
           )}
         </div>
@@ -277,26 +286,58 @@ export default function ShoppingListPage() {
 
       {archived && (
         <div className="alert" style={{ marginBottom: '1rem' }}>
-          This list is archived. Items are read-only until you unarchive it.
+          {t('list.archivedNotice')}
         </div>
       )}
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      <section className="stats-panel">
+        <StatsPie
+          completed={stats.completed}
+          pending={stats.pending}
+          label={`${t('list.statsCompleted')}: ${stats.completed}, ${t('list.statsPending')}: ${stats.pending}`}
+        />
+        <div className="stats-panel__details">
+          <h3 className="section-title">{t('list.statsTitle')}</h3>
+          {stats.total === 0 ? (
+            <p className="muted">{t('list.statsEmpty')}</p>
+          ) : (
+            <div className="stats-legend">
+              <div className="stats-legend__item">
+                <span className="legend-dot legend-dot--complete" />
+                <span>{t('list.statsCompleted')}</span>
+                <span className="stats-legend__value">{stats.completed}</span>
+              </div>
+              <div className="stats-legend__item">
+                <span className="legend-dot legend-dot--pending" />
+                <span>{t('list.statsPending')}</span>
+                <span className="stats-legend__value">{stats.pending}</span>
+              </div>
+              <div className="stats-legend__item">
+                <span className="legend-dot legend-dot--total" />
+                <span>{t('list.statsTotal')}</span>
+                <span className="stats-legend__value">{stats.total}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {loading ? (
-        <p className="muted">Loading items.</p>
+        <p className="muted">{t('list.loading')}</p>
       ) : (
         <>
           <form className="form-inline" onSubmit={addItem} style={{ marginBottom: '1rem' }}>
             <input
               className="text-input"
-              placeholder="Add item"
+              placeholder={t('list.addPlaceholder')}
               value={text}
               onChange={(e) => setText(e.target.value)}
               disabled={archived}
             />
             <button className="btn-primary" type="submit" disabled={archived}>
-              {archived ? 'Archived' : 'Add'}
+              {archived ? t('list.archivedButton') : t('list.addButton')}
             </button>
           </form>
 
@@ -315,11 +356,9 @@ export default function ShoppingListPage() {
           </div>
 
           {items.length === 0 ? (
-            <p className="muted">No items yet. Start by adding your first product.</p>
+            <p className="muted">{t('list.empty')}</p>
           ) : filteredItems.length === 0 ? (
-            <p className="muted">
-              No items match the current filter ({filterLabelMap[filter].toLowerCase()}).
-            </p>
+            <p className="muted">{t('list.filterEmpty', { filter: filterLabelMap[filter] })}</p>
           ) : (
             <ul className="items-list">
               {filteredItems.map((it) => (
@@ -335,7 +374,7 @@ export default function ShoppingListPage() {
                       className="item-name"
                       style={{
                         textDecoration: it.checked ? 'line-through' : 'none',
-                        color: it.checked ? '#9ca3af' : '',
+                        color: it.checked ? 'var(--color-muted)' : '',
                       }}
                     >
                       {it.name}
@@ -347,7 +386,7 @@ export default function ShoppingListPage() {
                     onClick={() => removeItem(it.name)}
                     disabled={archived}
                   >
-                    Remove
+                    {t('list.remove')}
                   </button>
                 </li>
               ))}

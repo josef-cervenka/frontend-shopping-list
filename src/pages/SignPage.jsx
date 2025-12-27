@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import * as api from '../api.js'
+import { useI18n } from '../contexts/useI18n'
 
 export default function SignPage() {
   const [username, setUsername] = useState('')
@@ -10,11 +11,12 @@ export default function SignPage() {
   const [error, setError] = useState(null)
   const navigate = useNavigate()
   const { login } = useAuth()
+  const { t } = useI18n()
 
   async function submit(e) {
     e.preventDefault()
     if (!username.trim() || !password.trim()) {
-      setError('Username and password are required')
+      setError(t('sign.errorRequired'))
       return
     }
     setError(null)
@@ -24,7 +26,7 @@ export default function SignPage() {
       login(token, user)
       navigate('/shoppingLists')
     } catch (err) {
-      setError(err.message || 'Unable to sign in')
+      setError(err.message || t('sign.errorGeneric'))
     } finally {
       setSubmitting(false)
     }
@@ -34,29 +36,29 @@ export default function SignPage() {
     <div className="page-card" style={{ maxWidth: 420, margin: '3rem auto' }}>
       <div className="page-header" style={{ marginBottom: '1rem' }}>
         <div>
-          <p className="eyebrow">Welcome back</p>
-          <h2 className="page-heading">Sign in / Sign up</h2>
+          <p className="eyebrow">{t('sign.eyebrow')}</p>
+          <h2 className="page-heading">{t('sign.heading')}</h2>
         </div>
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       <form className="form-stack" onSubmit={submit}>
         <input
           className="text-input"
-          placeholder="Username"
+          placeholder={t('sign.usernamePlaceholder')}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
           className="text-input"
-          placeholder="Password"
+          placeholder={t('sign.passwordPlaceholder')}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Signing in...' : 'Enter'}
+          {submitting ? t('sign.submitting') : t('sign.submit')}
         </button>
-        User/password: demo/demo, admin/admin, franta/franta
+        {t('sign.demoHint')}
       </form>
     </div>
   )

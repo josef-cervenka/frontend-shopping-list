@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import * as api from '../api.js'
 import { useAuth } from '../contexts/useAuth'
+import { useI18n } from '../contexts/useI18n'
 
 export default function MembersPage() {
   const { shoppingListId } = useParams()
@@ -12,6 +13,7 @@ export default function MembersPage() {
   const [error, setError] = useState(null)
   const [owner, setOwner] = useState('')
   const { user } = useAuth()
+  const { t } = useI18n()
   const canManageMembers = Boolean(owner && user?.username === owner)
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function MembersPage() {
       })
       .catch((err) => {
         if (mounted) {
-          setError(err.message || 'Unable to load members')
+          setError(err.message || t('members.loadError'))
         }
       })
       .finally(() => mounted && setLoading(false))
@@ -47,7 +49,7 @@ export default function MembersPage() {
       setText('')
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to add member')
+      setError(err.message || t('members.addError'))
     }
   }
 
@@ -58,7 +60,7 @@ export default function MembersPage() {
       setMembers(updatedMembers)
       setError(null)
     } catch (err) {
-      setError(err.message || 'Unable to remove member')
+      setError(err.message || t('members.removeError'))
     }
   }
 
@@ -66,24 +68,23 @@ export default function MembersPage() {
     <div className="page-card">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Members</p>
-          <h2 className="page-heading">List {shoppingListId}</h2>
+          <p className="eyebrow">{t('members.eyebrow')}</p>
+          <h2 className="page-heading">{t('members.heading', { name: shoppingListId })}</h2>
         </div>
         <div className="page-actions chip-links">
-        <Link className="chip-link" to={`/shoppingList/${encodedListId}`}>
-          ← Back to list
-        </Link>
-        <Link className="chip-link" to="/shoppingLists">
-          All lists
-        </Link>
-      </div>
-
+          <Link className="chip-link" to={`/shoppingList/${encodedListId}`}>
+            {t('members.backToList')}
+          </Link>
+          <Link className="chip-link" to="/shoppingLists">
+            {t('members.allLists')}
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       {loading ? (
-        <p className="muted">Loading members.</p>
+        <p className="muted">{t('members.loading')}</p>
       ) : (
         <>
           {canManageMembers ? (
@@ -91,32 +92,32 @@ export default function MembersPage() {
               <input
                 className="text-input"
                 value={text}
-                placeholder="Add member"
+                placeholder={t('members.addPlaceholder')}
                 onChange={(e) => setText(e.target.value)}
               />
               <button className="btn-primary" type="submit">
-                Add
+                {t('members.addButton')}
               </button>
             </form>
           ) : (
             <p className="muted" style={{ marginBottom: '1rem' }}>
-              Only the owner can manage members.
+              {t('members.ownerOnly')}
             </p>
           )}
 
           {members.length === 0 ? (
-            <p className="muted">No members yet.</p>
+            <p className="muted">{t('members.empty')}</p>
           ) : (
             <ul className="members-list">
               {members.map((m, i) => (
                 <li key={`${m}-${i}`}>
                   <div className="checkbox-row" style={{ gap: '0.35rem' }}>
                     <span>{m}</span>
-                    {m === owner && <span className="tag-owner">Owner</span>}
+                    {m === owner && <span className="tag-owner">{t('members.ownerTag')}</span>}
                   </div>
                   {(canManageMembers && m !== owner) && (
                     <button className="btn-text" type="button" onClick={() => removeMember(m)}>
-                      Remove
+                      {t('members.remove')}
                     </button>
                   )}
                 </li>
