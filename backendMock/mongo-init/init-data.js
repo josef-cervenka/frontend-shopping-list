@@ -18,7 +18,7 @@ const shoppingLists = [
     ],
   },
   {
-    name: 'pantry-topup',
+    name: 'Rodinný nákup',
     owner: 'demo',
     members: ['demo', 'admin'],
     archived: false,
