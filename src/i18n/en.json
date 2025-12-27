@@ -1,5 +1,7 @@
 {
-  "app": { "name": "Shopping Buddy" },
+  "app": {
+    "name": "Shopping Buddy"
+  },
   "nav": {
     "myLists": "My Lists",
     "signIn": "Sign in",
