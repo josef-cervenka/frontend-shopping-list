@@ -6,13 +6,24 @@ Use the steps below to get the frontend and its MongoDB-backed API running.
 
 1. Run docker compose
    - prerequsites - docker 
-   - go to the root folder and tun command `docker compose up -d`
+   - go to the root folder and tun command `docker compose up --build -d`
 
 2. Open the URL http://localhost:8080 to start testing
 
 3. Remove app containers and volumes from docker
    - go to the root folder and run command `docker compose down -v`
    
+
+
+## New features
+
+| Feature |  |  |
+|--------|--------------|--------------|
+| Themes dark/light modes | ![alt text](./assets/image-10.png) | ![alt text](./assets/image-11.png) |
+| Multilang using i18n    | ![alt text](./assets/image-11.png) | ![alt text](./assets/image-12.png) |
+| Graphs    | ![alt text](./assets/image-13.png) | ![alt text](./assets/image-14.png) |
+
+
 
 ## Testing the app
 
